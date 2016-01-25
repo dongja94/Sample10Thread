@@ -55,8 +55,12 @@ public class MainActivity extends AppCompatActivity {
                         while(count <= 100) {
 //                            messageView.setText("current progress : " + count);
 //                            progressView.setProgress(count);
-                            Message msg = mHandler.obtainMessage(MESSAGE_PROGRESS, count, 0);
-                            mHandler.sendMessage(msg);
+
+//                            Message msg = mHandler.obtainMessage(MESSAGE_PROGRESS, count, 0);
+//                            mHandler.sendMessage(msg);
+
+                            mHandler.post(new ProgressRunnable(count));
+
                             try {
                                 Thread.sleep(500);
                             } catch (InterruptedException e) {
@@ -66,10 +70,32 @@ public class MainActivity extends AppCompatActivity {
                         }
 
 //                        messageView.setText("progress done");
-                        mHandler.sendEmptyMessage(MESSAGE_COMPLETE);
+//                        mHandler.sendEmptyMessage(MESSAGE_COMPLETE);
+                        mHandler.post(new CompleteRunnable());
+
                     }
                 }).start();
             }
         });
+    }
+
+    class ProgressRunnable implements Runnable {
+        int progress;
+        public ProgressRunnable(int progress) {
+            this.progress = progress;
+        }
+
+        @Override
+        public void run() {
+            messageView.setText("current progress : " + progress);
+            progressView.setProgress(progress);
+        }
+    }
+
+    class CompleteRunnable implements Runnable {
+        @Override
+        public void run() {
+            messageView.setText("progress done");
+        }
     }
 }

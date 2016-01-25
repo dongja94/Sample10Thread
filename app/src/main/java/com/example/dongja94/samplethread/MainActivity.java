@@ -1,5 +1,6 @@
 package com.example.dongja94.samplethread;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -46,37 +47,80 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressView.setMax(100);
-                messageView.setText("start download...");
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        int count = 0;
-                        while(count <= 100) {
+                new MyTask().execute();
+            }
+        });
+    }
+
+    private void startThread() {
+        progressView.setMax(100);
+        messageView.setText("start download...");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int count = 0;
+                while(count <= 100) {
 //                            messageView.setText("current progress : " + count);
 //                            progressView.setProgress(count);
 
 //                            Message msg = mHandler.obtainMessage(MESSAGE_PROGRESS, count, 0);
 //                            mHandler.sendMessage(msg);
 
-                            mHandler.post(new ProgressRunnable(count));
+                    mHandler.post(new ProgressRunnable(count));
 
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            count += 5;
-                        }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    count += 5;
+                }
 
 //                        messageView.setText("progress done");
 //                        mHandler.sendEmptyMessage(MESSAGE_COMPLETE);
-                        mHandler.post(new CompleteRunnable());
+                mHandler.post(new CompleteRunnable());
 
-                    }
-                }).start();
             }
-        });
+        }).start();
+    }
+    class MyTask extends AsyncTask<String,Integer,Boolean> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressView.setMax(100);
+            messageView.setText("start download...");
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            int count = 0;
+            while(count <= 100) {
+                // update
+                publishProgress(count);
+
+                count+=5;
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            int progress = values[0];
+            messageView.setText("current progress : " + progress);
+            progressView.setProgress(progress);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            messageView.setText("progress done");
+        }
     }
 
     class ProgressRunnable implements Runnable {
